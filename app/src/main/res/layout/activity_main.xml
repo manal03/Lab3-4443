@@ -32,6 +32,27 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView2" />
 
+    <TextView
+        android:id="@+id/storageLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Use SQLite (unchecked = SharedPreferences)"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@+id/textView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <CheckBox
+        android:id="@+id/useSqliteCheck"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SQLite"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@+id/storageLabel"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+
     <Button
         android:id="@+id/submitBtnId"
         android:layout_width="100dp"
@@ -55,7 +76,7 @@
         android:hint="Name"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
+        app:layout_constraintTop_toBottomOf="@+id/useSqliteCheck" />
 
     <EditText
         android:id="@+id/phoneNumberId"

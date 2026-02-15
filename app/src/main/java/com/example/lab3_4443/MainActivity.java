@@ -14,14 +14,19 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import android.widget.CheckBox;
 
 public class MainActivity extends AppCompatActivity {
 
     Button submitBtn;
     EditText name, phoneNumber, date, description;
+    CheckBox useSqliteCheck;
+    DBHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        useSqliteCheck = findViewById(R.id.useSqliteCheck);
+        dbHelper = new DBHelper(this);
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
@@ -42,20 +47,43 @@ public class MainActivity extends AppCompatActivity {
         submitBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 String dateText = date.getText().toString().trim();
                 String nameText = name.getText().toString().trim();
                 String phoneNumberText = phoneNumber.getText().toString().trim();
                 String descriptionText = description.getText().toString().trim();
 
-                if(nameText.isEmpty() || phoneNumberText.isEmpty() || dateText.isEmpty() || descriptionText.isEmpty()) {
-                    Toast.makeText(MainActivity.this, "Unsuccessful - make sure all values are added.", Toast.LENGTH_SHORT).show();
-                }else{
-                    Toast.makeText(MainActivity.this, "Successfully added a contact.", Toast.LENGTH_SHORT).show();
+                if (nameText.isEmpty() || phoneNumberText.isEmpty() || dateText.isEmpty()) {
+                    Toast.makeText(MainActivity.this,
+                            "Unsuccessful - required fields missing (Name, Phone, Date).",
+                            Toast.LENGTH_SHORT).show();
+                    return;
                 }
+
+                // Create model
+                Contact c = new Contact(nameText, phoneNumberText, dateText, descriptionText);
+
+                // Choose storage method at runtime
+                if (useSqliteCheck.isChecked()) {
+                    long rowId = dbHelper.insertContact(c);
+                    if (rowId == -1) {
+                        Toast.makeText(MainActivity.this, "SQLite save failed.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    Toast.makeText(MainActivity.this, "Saved to SQLite!", Toast.LENGTH_SHORT).show();
+                } else {
+                    SharedPrefsStorage.saveContact(MainActivity.this, c);
+                    Toast.makeText(MainActivity.this, "Saved to SharedPreferences!", Toast.LENGTH_SHORT).show();
+                }
+
+                // Clear the form
+                name.setText("");
+                phoneNumber.setText("");
+                date.setText("");
+                description.setText("");
             }
-
-
         });
+
 
         date.setOnClickListener(new View.OnClickListener() {
             @Override
