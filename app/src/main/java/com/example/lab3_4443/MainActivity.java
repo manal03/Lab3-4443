@@ -1,5 +1,6 @@
 package com.example.lab3_4443;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -20,10 +21,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import android.widget.CheckBox;
-import android.widget.ListView;
-import android.widget.ArrayAdapter;
-import java.util.ArrayList;
-import java.util.List;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -31,9 +29,7 @@ public class MainActivity extends AppCompatActivity {
     EditText name, phoneNumber, date, description;
     CheckBox useSqliteCheck;
     DBHelper dbHelper;
-    ListView listViewContacts;
-    ArrayAdapter<String> adapter;
-    ArrayList<String> displayList = new ArrayList<>();
+
     ArrayList<Contact> contactObjects = new ArrayList<>();
 
     @Override
@@ -56,16 +52,17 @@ public class MainActivity extends AppCompatActivity {
         date = findViewById(R.id.dateId);
         description = findViewById(R.id.descriptionId);
 
-        listViewContacts = findViewById(R.id.listViewContacts);
         dbHelper = new DBHelper(this);
-        adapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_list_item_1,
-                displayList
-        );
 
-        listViewContacts.setAdapter(adapter);
-        loadContactsToList();
+        boolean fromAddButton = getIntent().getBooleanExtra("FROM_ADD_BUTTON", false);
+
+        List<Contact> existingContacts = dbHelper.getAllContacts();
+
+        if (!existingContacts.isEmpty() && !fromAddButton) {
+            Intent intent = new Intent(MainActivity.this, ContactsActivity.class);
+            startActivity(intent);
+            finish();
+        }
 
 
         submitBtn.setOnClickListener(new View.OnClickListener() {
@@ -77,11 +74,14 @@ public class MainActivity extends AppCompatActivity {
                 String phoneNumberText = phoneNumber.getText().toString().trim();
                 String descriptionText = description.getText().toString().trim();
 
+
+
                 if (nameText.isEmpty() || phoneNumberText.isEmpty() || dateText.isEmpty()) {
                     Toast.makeText(MainActivity.this,
                             "Unsuccessful - required fields missing (Name, Phone, Date).",
                             Toast.LENGTH_SHORT).show();
                     return;
+
                 }
 
                 // Create model
@@ -99,13 +99,16 @@ public class MainActivity extends AppCompatActivity {
                     SharedPrefsStorage.saveContact(MainActivity.this, c);
                     Toast.makeText(MainActivity.this, "Saved to SharedPreferences!", Toast.LENGTH_SHORT).show();
                 }
-                loadContactsToList();
 
                 // Clear the form
                 name.setText("");
                 phoneNumber.setText("");
                 date.setText("");
                 description.setText("");
+
+                Intent intent = new Intent(MainActivity.this, ContactsActivity.class);
+                startActivity(intent);
+                finish();
             }
         });
 
@@ -134,33 +137,5 @@ public class MainActivity extends AppCompatActivity {
                 datePickerDialog.show();
             }
         });
-    }
-    private void loadContactsToList() {
-        displayList.clear();
-        contactObjects.clear();
-
-        boolean useSQLite = useSqliteCheck.isChecked();
-
-        List<Contact> contacts;
-        if (useSQLite) {
-            contacts = dbHelper.getAllContacts();   // you added this
-        } else {
-            contacts = SharedPrefsStorage.loadContacts(this); // you added this
-        }
-
-        for (Contact c : contacts) {
-            contactObjects.add(c);
-
-            String line = c.getName() + " | " + c.getPhone(); // or getPhoneNumber()
-            displayList.add(line);
-        }
-
-        adapter.notifyDataSetChanged();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        loadContactsToList();
     }
 }
